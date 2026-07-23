@@ -30,6 +30,15 @@ const writeDB = async (data) => {
   }
 };
 
+// --- Authentication Middleware ---
+const requireAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || authHeader !== 'Bearer aaravam@admin2526') {
+    return res.status(401).json({ error: 'Unauthorized: Invalid or missing password' });
+  }
+  next();
+};
+
 // --- API Endpoints ---
 
 // Get all events
@@ -39,7 +48,7 @@ app.get('/api/events', async (req, res) => {
 });
 
 // Add a new event
-app.post('/api/events', async (req, res) => {
+app.post('/api/events', requireAuth, async (req, res) => {
   const { name, category } = req.body;
   if (!name || !category) {
     return res.status(400).json({ error: 'Missing name or category' });
@@ -60,7 +69,7 @@ app.post('/api/events', async (req, res) => {
 });
 
 // Update event points
-app.put('/api/events/:id/points', async (req, res) => {
+app.put('/api/events/:id/points', requireAuth, async (req, res) => {
   const { id } = req.params;
   const points = req.body; // should be an object like { "batch_22": 10 }
   
@@ -78,7 +87,7 @@ app.put('/api/events/:id/points', async (req, res) => {
 });
 
 // Delete an event
-app.delete('/api/events/:id', async (req, res) => {
+app.delete('/api/events/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
   
   const data = await readDB();

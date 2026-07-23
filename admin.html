@@ -13,15 +13,9 @@
   <script src="tailwind-config.js"></script>
   
   <script>
-    // Simple client-side protection for the admin panel
-    if (sessionStorage.getItem('adminAuthenticated') !== 'true') {
-      const pass = prompt("Enter Admin Password:");
-      if (pass === "aaravam@admin2526") {
-        sessionStorage.setItem('adminAuthenticated', 'true');
-      } else {
-        alert("Incorrect password.");
-        window.location.href = 'index.html';
-      }
+    // Robust client-side protection: Redirect to login if no token
+    if (sessionStorage.getItem('adminToken') !== 'aaravam@admin2526') {
+      window.location.href = 'login.html';
     }
   </script>
 
@@ -91,8 +85,18 @@
   <!-- Simple Header -->
   <header style="padding: 16px 24px; border-bottom: 1px solid rgba(201,162,39,0.1); display: flex; justify-content: space-between; align-items: center; background: #0A0704;">
     <h1 style="font-family: 'Cinzel', serif; font-size: 18px; color: #C9A227; letter-spacing: 0.2em;">Aaravam Admin</h1>
-    <a href="index.html" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #B8A98A; text-decoration: none;">&larr; Back to Site</a>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <a href="index.html" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #B8A98A; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#F5EFE0'" onmouseout="this.style.color='#B8A98A'">Site</a>
+      <button onclick="logout()" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #F2601E; background: none; border: none; cursor: pointer; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ff7b42'" onmouseout="this.style.color='#F2601E'">Logout</button>
+    </div>
   </header>
+  
+  <script>
+    function logout() {
+      sessionStorage.removeItem('adminToken');
+      window.location.href = 'login.html';
+    }
+  </script>
 
   <main style="max-width: 800px; margin: 40px auto; padding: 0 16px;">
     

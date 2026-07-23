@@ -22,9 +22,13 @@ async function getData() {
 
 async function addEvent(name, category) {
   try {
+    const token = sessionStorage.getItem('adminToken') || '';
     const response = await fetch('/api/events', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify({ name, category })
     });
     return await response.json();
@@ -35,9 +39,13 @@ async function addEvent(name, category) {
 
 async function updateEventPoints(eventId, pointsObj) {
   try {
+    const token = sessionStorage.getItem('adminToken') || '';
     const response = await fetch(`/api/events/${eventId}/points`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
       body: JSON.stringify(pointsObj)
     });
     return await response.json();
@@ -48,7 +56,11 @@ async function updateEventPoints(eventId, pointsObj) {
 
 async function deleteEvent(eventId) {
   try {
-    await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+    const token = sessionStorage.getItem('adminToken') || '';
+    await fetch(`/api/events/${eventId}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
   } catch (err) {
     console.error("Failed to delete event", err);
   }
