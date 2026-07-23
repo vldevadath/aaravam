@@ -2,8 +2,43 @@
 // Handles UI logic for admin.html
 
 document.addEventListener("DOMContentLoaded", () => {
-  const { TEAMS, getData, addEvent, updateEventPoints, deleteEvent } = window.AaravamData;
+  const { TEAMS, getData, addEvent, updateEventName, updateEventPoints, deleteEvent } = window.AaravamData;
 
+  // Login Overlay Logic
+  const loginOverlay = document.getElementById("login-overlay");
+  const dashboardContent = document.getElementById("dashboard-content");
+  const loginForm = document.getElementById("login-form");
+  const loginError = document.getElementById("login-error");
+  const passwordInput = document.getElementById("password-input");
+
+  // Check if already logged in
+  if (sessionStorage.getItem('adminToken') === 'aaravam@admin2526') {
+    loginOverlay.style.display = 'none';
+    dashboardContent.classList.add('visible');
+    renderEvents(); // Only load data if authenticated
+  }
+
+  // Handle Login Submit
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const pass = passwordInput.value;
+    
+    if (pass === 'aaravam@admin2526') {
+      sessionStorage.setItem('adminToken', pass);
+      loginOverlay.style.opacity = '0';
+      setTimeout(() => {
+        loginOverlay.style.display = 'none';
+        dashboardContent.classList.add('visible');
+        renderEvents();
+      }, 500);
+    } else {
+      loginError.style.display = 'block';
+      passwordInput.value = '';
+    }
+  });
+
+
+  // Dashboard Logic
   const eventsListEl = document.getElementById("events-list");
   const addEventForm = document.getElementById("add-event-form");
   
@@ -13,6 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalEventName = document.getElementById("modal-event-name");
   const teamInputsContainer = document.getElementById("team-inputs");
   const deleteEventBtn = document.getElementById("delete-event-btn");
+  
+  // Edit Name Elements
+  const editNameBtn = document.getElementById("edit-name-btn");
+  const editNameForm = document.getElementById("edit-name-form");
+  const editNameInput = document.getElementById("edit-name-input");
+  const cancelEditNameBtn = document.getElementById("cancel-edit-name");
 
   let currentEditingEventId = null;
 
@@ -38,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h4 style="font-family: 'Cinzel', serif; font-size: 15px; color: #F5EFE0; margin: 0;">${ev.name}</h4>
           <span style="font-size: 11px; color: #7A6E58; text-transform: uppercase;">${categoryLabel}</span>
         </div>
-        <span style="color: #C9A227; font-size: 12px; font-weight: 600;">Edit Scores &rarr;</span>
+        <span style="color: #C9A227; font-size: 12px; font-weight: 600;">Edit &rarr;</span>
       `;
       
       el.addEventListener("click", () => openModal(ev));
@@ -64,10 +105,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Open Modal to edit scores
+  // Open Modal to edit scores and names
   function openModal(ev) {
     currentEditingEventId = ev.id;
     modalEventName.textContent = ev.name;
+    
+    // Reset Edit Name State
+    modalEventName.style.display = 'block';
+    editNameBtn.style.display = 'inline-block';
+    editNameForm.style.display = 'none';
     
     // Generate inputs for each team
     teamInputsContainer.innerHTML = '';
@@ -93,6 +139,49 @@ document.addEventListener("DOMContentLoaded", () => {
   closeModalBtn.addEventListener("click", () => {
     scoreModal.style.display = "none";
     currentEditingEventId = null;
+  });
+  
+  // Edit Name Button Logic
+  editNameBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    editNameInput.value = modalEventName.textContent;
+    modalEventName.style.display = 'none';
+    editNameBtn.style.display = 'none';
+    editNameForm.style.display = 'flex';
+    editNameInput.focus();
+  });
+  
+  // Cancel Edit Name
+  cancelEditNameBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    modalEventName.style.display = 'block';
+    editNameBtn.style.display = 'inline-block';
+    editNameForm.style.display = 'none';
+  });
+  
+  // Save New Name
+  editNameForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentEditingEventId) return;
+    
+    const newName = editNameInput.value.trim();
+    if (newName && newName !== modalEventName.textContent) {
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.textContent = '...';
+      btn.disabled = true;
+      
+      await updateEventName(currentEditingEventId, newName);
+      modalEventName.textContent = newName;
+      
+      btn.textContent = 'Save';
+      btn.disabled = false;
+      await renderEvents(); // Refresh list in background
+    }
+    
+    // Switch back to normal view
+    modalEventName.style.display = 'block';
+    editNameBtn.style.display = 'inline-block';
+    editNameForm.style.display = 'none';
   });
 
   // Save Scores
@@ -136,7 +225,4 @@ document.addEventListener("DOMContentLoaded", () => {
       await renderEvents();
     }
   });
-
-  // Initial render
-  renderEvents();
 });

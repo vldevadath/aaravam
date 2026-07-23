@@ -37,6 +37,23 @@ async function addEvent(name, category) {
   }
 }
 
+async function updateEventName(eventId, name) {
+  try {
+    const token = sessionStorage.getItem('adminToken') || '';
+    const response = await fetch(`/api/events/${eventId}/name`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name })
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("Failed to update event name", err);
+  }
+}
+
 async function updateEventPoints(eventId, pointsObj) {
   try {
     const token = sessionStorage.getItem('adminToken') || '';
@@ -101,6 +118,7 @@ window.AaravamData = {
   TEAMS,
   getData,
   addEvent,
+  updateEventName,
   updateEventPoints,
   deleteEvent,
   getLeaderboard

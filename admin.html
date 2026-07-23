@@ -11,14 +11,6 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="tailwind-config.js"></script>
-  
-  <script>
-    // Robust client-side protection: Redirect to login if no token
-    if (sessionStorage.getItem('adminToken') !== 'aaravam@admin2526') {
-      window.location.href = 'login.html';
-    }
-  </script>
-
   <link rel="stylesheet" href="style.css">
   <style>
     .admin-card {
@@ -78,78 +70,147 @@
     .event-item:hover {
       background: rgba(201,162,39,0.05);
     }
+    
+    /* Login Overlay */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: #0A0704;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+    .login-container {
+      background: rgba(31,22,13,0.9);
+      border: 1px solid rgba(201,162,39,0.2);
+      border-radius: 8px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .login-container input {
+      margin-top: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+      letter-spacing: 0.1em;
+      padding: 12px 16px;
+    }
+    #login-error {
+      color: #F2601E;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      margin-top: -12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    #dashboard-content {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    #dashboard-content.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body class="bg-bg-base text-text-primary font-body">
 
-  <!-- Simple Header -->
-  <header style="padding: 16px 24px; border-bottom: 1px solid rgba(201,162,39,0.1); display: flex; justify-content: space-between; align-items: center; background: #0A0704;">
-    <h1 style="font-family: 'Cinzel', serif; font-size: 18px; color: #C9A227; letter-spacing: 0.2em;">Aaravam Admin</h1>
-    <div style="display: flex; gap: 16px; align-items: center;">
-      <a href="index.html" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #B8A98A; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#F5EFE0'" onmouseout="this.style.color='#B8A98A'">Site</a>
-      <button onclick="logout()" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #F2601E; background: none; border: none; cursor: pointer; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ff7b42'" onmouseout="this.style.color='#F2601E'">Logout</button>
-    </div>
-  </header>
-  
-  <script>
-    function logout() {
-      sessionStorage.removeItem('adminToken');
-      window.location.href = 'login.html';
-    }
-  </script>
-
-  <main style="max-width: 800px; margin: 40px auto; padding: 0 16px;">
-    
-    <!-- Add Event -->
-    <section class="admin-card">
-      <h2 style="font-family: 'Cinzel', serif; font-size: 20px; color: #F5EFE0; margin-bottom: 16px; letter-spacing: 0.1em;">Add New Event</h2>
-      <form id="add-event-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;">
-        <div>
-          <label style="font-size: 12px; color: #B8A98A; text-transform: uppercase; letter-spacing: 0.1em;">Event Name</label>
-          <input type="text" id="event-name" required placeholder="e.g. Group Dance">
-        </div>
-        <div>
-          <label style="font-size: 12px; color: #B8A98A; text-transform: uppercase; letter-spacing: 0.1em;">Category</label>
-          <select id="event-category" required>
-            <option value="on_stage">On Stage</option>
-            <option value="off_stage">Off Stage</option>
-          </select>
-        </div>
-        <button type="submit" class="btn">Add Event</button>
-      </form>
-    </section>
-
-    <!-- Manage Events & Scores -->
-    <section class="admin-card">
-      <h2 style="font-family: 'Cinzel', serif; font-size: 20px; color: #F5EFE0; margin-bottom: 16px; letter-spacing: 0.1em;">Manage Scores</h2>
-      <p style="font-size: 13px; color: #7A6E58; margin-bottom: 16px;">Click on an event to assign points.</p>
+  <!-- Unified Login Overlay -->
+  <div id="login-overlay">
+    <div class="login-container">
+      <h1 style="font-family: 'Cinzel', serif; font-size: 28px; color: #C9A227; letter-spacing: 0.2em; margin-bottom: 8px;">AARAVAM</h1>
+      <h2 style="font-family: 'Inter', sans-serif; font-size: 14px; color: #B8A98A; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Admin Authentication</h2>
       
-      <div id="events-list" style="border: 1px solid rgba(201,162,39,0.2); border-radius: 4px; overflow: hidden;">
-        <!-- Events rendered here by JS -->
-      </div>
-    </section>
-
-    <!-- Score Editor Modal (Hidden by default) -->
-    <div id="score-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center;">
-      <div style="background: #161009; border: 1px solid #C9A227; border-radius: 8px; padding: 32px; width: 100%; max-width: 500px; position: relative;">
-        <button id="close-modal" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #B8A98A; cursor: pointer; font-size: 24px;">&times;</button>
-        
-        <h3 id="modal-event-name" style="font-family: 'Cinzel', serif; font-size: 24px; color: #F5EFE0; margin-bottom: 8px;">Event Name</h3>
-        <p style="font-size: 13px; color: #7A6E58; margin-bottom: 24px;">Assign points to each team. Leave blank for 0.</p>
-        
-        <form id="score-form">
-          <div id="team-inputs" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
-            <!-- Inputs rendered here by JS -->
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <button type="button" id="delete-event-btn" class="btn btn-danger">Delete Event</button>
-            <button type="submit" class="btn">Save Scores</button>
-          </div>
-        </form>
+      <form id="login-form">
+        <input type="password" id="password-input" required placeholder="Enter Password">
+        <div id="login-error">Incorrect password. Please try again.</div>
+        <button type="submit" class="btn" style="width:100%">Authenticate</button>
+      </form>
+      
+      <div style="margin-top: 24px;">
+        <a href="index.html" style="font-family: 'Inter', sans-serif; font-size: 12px; color: #7A6E58; text-decoration: none; transition: color 0.2s;">&larr; Return to Homepage</a>
       </div>
     </div>
+  </div>
 
-  </main>
+  <div id="dashboard-content">
+    <!-- Simple Header -->
+    <header style="padding: 16px 24px; border-bottom: 1px solid rgba(201,162,39,0.1); display: flex; justify-content: space-between; align-items: center; background: #0A0704;">
+      <h1 style="font-family: 'Cinzel', serif; font-size: 18px; color: #C9A227; letter-spacing: 0.2em;">Aaravam Admin</h1>
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <a href="index.html" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #B8A98A; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#F5EFE0'" onmouseout="this.style.color='#B8A98A'">Site</a>
+        <button id="logout-btn" style="font-family: 'Inter', sans-serif; font-size: 13px; color: #F2601E; background: none; border: none; cursor: pointer; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#ff7b42'" onmouseout="this.style.color='#F2601E'">Logout</button>
+      </div>
+    </header>
+
+    <main style="max-width: 800px; margin: 40px auto; padding: 0 16px;">
+      
+      <!-- Add Event -->
+      <section class="admin-card">
+        <h2 style="font-family: 'Cinzel', serif; font-size: 20px; color: #F5EFE0; margin-bottom: 16px; letter-spacing: 0.1em;">Add New Event</h2>
+        <form id="add-event-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;">
+          <div>
+            <label style="font-size: 12px; color: #B8A98A; text-transform: uppercase; letter-spacing: 0.1em;">Event Name</label>
+            <input type="text" id="event-name" required placeholder="e.g. Group Dance">
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #B8A98A; text-transform: uppercase; letter-spacing: 0.1em;">Category</label>
+            <select id="event-category" required>
+              <option value="on_stage">On Stage</option>
+              <option value="off_stage">Off Stage</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Add Event</button>
+        </form>
+      </section>
+
+      <!-- Manage Events & Scores -->
+      <section class="admin-card">
+        <h2 style="font-family: 'Cinzel', serif; font-size: 20px; color: #F5EFE0; margin-bottom: 16px; letter-spacing: 0.1em;">Manage Scores</h2>
+        <p style="font-size: 13px; color: #7A6E58; margin-bottom: 16px;">Click on an event to assign points.</p>
+        
+        <div id="events-list" style="border: 1px solid rgba(201,162,39,0.2); border-radius: 4px; overflow: hidden;">
+          <!-- Events rendered here by JS -->
+        </div>
+      </section>
+
+      <!-- Score Editor Modal -->
+      <div id="score-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center;">
+        <div style="background: #161009; border: 1px solid #C9A227; border-radius: 8px; padding: 32px; width: 100%; max-width: 500px; position: relative;">
+          <button id="close-modal" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #B8A98A; cursor: pointer; font-size: 24px;">&times;</button>
+          
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <h3 id="modal-event-name" style="font-family: 'Cinzel', serif; font-size: 24px; color: #F5EFE0; margin: 0;">Event Name</h3>
+            <button id="edit-name-btn" style="background:none; border:none; color:#C9A227; cursor:pointer; font-size:12px; font-family:'Inter',sans-serif; text-decoration:underline;">Edit</button>
+          </div>
+          
+          <!-- Hidden edit name form -->
+          <form id="edit-name-form" style="display:none; margin-bottom: 8px; gap:8px;">
+            <input type="text" id="edit-name-input" required style="margin-top:0; padding:8px;" />
+            <button type="submit" class="btn" style="padding: 8px 12px; font-size: 12px;">Save</button>
+            <button type="button" id="cancel-edit-name" style="background:none; border:none; color:#B8A98A; cursor:pointer; font-size:12px;">Cancel</button>
+          </form>
+
+          <p style="font-size: 13px; color: #7A6E58; margin-bottom: 24px;">Assign points to each team. Leave blank for 0.</p>
+          
+          <form id="score-form">
+            <div id="team-inputs" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+              <!-- Inputs rendered here by JS -->
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <button type="button" id="delete-event-btn" class="btn btn-danger">Delete Event</button>
+              <button type="submit" class="btn">Save Scores</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <script src="data.js"></script>
   <script src="admin.js"></script>
