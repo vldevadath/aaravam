@@ -54,7 +54,7 @@ async function updateEventName(eventId, name) {
   }
 }
 
-async function updateEventPoints(eventId, pointsObj) {
+async function updateEventPoints(eventId, payload) {
   try {
     const token = sessionStorage.getItem('adminToken') || '';
     const response = await fetch(`/api/events/${eventId}/points`, {
@@ -63,11 +63,11 @@ async function updateEventPoints(eventId, pointsObj) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(pointsObj)
+      body: JSON.stringify(payload)
     });
     return await response.json();
   } catch (err) {
-    console.error("Failed to update points", err);
+    console.error("Failed to update points/winners", err);
   }
 }
 

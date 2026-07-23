@@ -46,7 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModalBtn = document.getElementById("close-modal");
   const scoreForm = document.getElementById("score-form");
   const modalEventName = document.getElementById("modal-event-name");
-  const teamInputsContainer = document.getElementById("team-inputs");
+  const winnersListContainer = document.getElementById("winners-list");
+  const addWinnerBtn = document.getElementById("add-winner-btn");
   const deleteEventBtn = document.getElementById("delete-event-btn");
   
   // Edit Name Elements
@@ -115,25 +116,53 @@ document.addEventListener("DOMContentLoaded", () => {
     editNameBtn.style.display = 'inline-block';
     editNameForm.style.display = 'none';
     
-    // Generate inputs for each team
-    teamInputsContainer.innerHTML = '';
-    TEAMS.forEach(team => {
-      const currentPoints = ev.points && ev.points[team.id] !== undefined ? ev.points[team.id] : '';
-      
-      const wrap = document.createElement("div");
-      wrap.style.display = "flex";
-      wrap.style.alignItems = "center";
-      wrap.style.justifyContent = "space-between";
-      
-      wrap.innerHTML = `
-        <label style="font-family: 'Cinzel', serif; color: #F5EFE0; font-size: 14px; text-transform: uppercase;">${team.name}</label>
-        <input type="number" min="0" data-team-id="${team.id}" value="${currentPoints}" style="width: 100px; text-align: right;" placeholder="0">
-      `;
-      teamInputsContainer.appendChild(wrap);
-    });
+    // Populate winners list
+    winnersListContainer.innerHTML = '';
+    
+    if (ev.winners && ev.winners.length > 0) {
+      ev.winners.forEach(w => addWinnerRow(w));
+    } else {
+      addWinnerRow(); // Add one empty row by default
+    }
 
     scoreModal.style.display = "flex";
   }
+  
+  function addWinnerRow(winnerData = null) {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+    row.style.alignItems = "center";
+    
+    const place = winnerData ? winnerData.place : '1';
+    const name = winnerData ? winnerData.name : '';
+    const teamId = winnerData ? winnerData.teamId : TEAMS[0].id;
+    const points = winnerData ? winnerData.points : '';
+    
+    let teamOptions = TEAMS.map(t => `<option value="${t.id}" ${t.id === teamId ? 'selected' : ''}>${t.name}</option>`).join('');
+    
+    row.innerHTML = `
+      <select class="winner-place" style="width: 70px; flex-shrink: 0; padding: 8px;">
+        <option value="1" ${place === '1' ? 'selected' : ''}>1st</option>
+        <option value="2" ${place === '2' ? 'selected' : ''}>2nd</option>
+        <option value="3" ${place === '3' ? 'selected' : ''}>3rd</option>
+      </select>
+      <input type="text" class="winner-name" value="${name}" placeholder="Student Name" required style="flex: 1; min-width: 120px; margin: 0; padding: 8px;">
+      <select class="winner-team" style="width: 100px; flex-shrink: 0; padding: 8px;">
+        ${teamOptions}
+      </select>
+      <input type="number" class="winner-points" value="${points}" placeholder="Pts" required min="1" style="width: 60px; flex-shrink: 0; margin: 0; padding: 8px; text-align: center;">
+      <button type="button" class="remove-winner-btn" style="background: none; border: none; color: #F2601E; cursor: pointer; font-size: 16px; padding: 4px;">&times;</button>
+    `;
+    
+    row.querySelector('.remove-winner-btn').addEventListener('click', () => {
+      row.remove();
+    });
+    
+    winnersListContainer.appendChild(row);
+  }
+  
+  addWinnerBtn.addEventListener("click", () => addWinnerRow());
 
   // Close Modal
   closeModalBtn.addEventListener("click", () => {
@@ -184,17 +213,24 @@ document.addEventListener("DOMContentLoaded", () => {
     editNameForm.style.display = 'none';
   });
 
-  // Save Scores
+  // Save Scores and Winners
   scoreForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentEditingEventId) return;
 
+    const winners = [];
     const pointsObj = {};
-    const inputs = teamInputsContainer.querySelectorAll("input");
-    inputs.forEach(input => {
-      const val = parseInt(input.value, 10);
-      if (!isNaN(val) && val > 0) {
-        pointsObj[input.getAttribute("data-team-id")] = val;
+    
+    const rows = winnersListContainer.querySelectorAll("div");
+    rows.forEach(row => {
+      const place = row.querySelector('.winner-place').value;
+      const name = row.querySelector('.winner-name').value.trim();
+      const teamId = row.querySelector('.winner-team').value;
+      const pts = parseInt(row.querySelector('.winner-points').value, 10);
+      
+      if (name && !isNaN(pts) && pts > 0) {
+        winners.push({ place, name, teamId, points: pts });
+        pointsObj[teamId] = (pointsObj[teamId] || 0) + pts;
       }
     });
 
@@ -202,11 +238,14 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.textContent = 'Saving...';
     btn.disabled = true;
     
-    await updateEventPoints(currentEditingEventId, pointsObj);
+    // updateEventPoints in data.js now needs to send { points, winners }
+    // We will pass the combined object.
+    await updateEventPoints(currentEditingEventId, { points: pointsObj, winners });
+    
     scoreModal.style.display = "none";
     currentEditingEventId = null;
     
-    btn.textContent = 'Save Scores';
+    btn.textContent = 'Save Winners';
     btn.disabled = false;
     
     await renderEvents();

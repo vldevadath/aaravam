@@ -196,15 +196,19 @@
             <button type="button" id="cancel-edit-name" style="background:none; border:none; color:#B8A98A; cursor:pointer; font-size:12px;">Cancel</button>
           </form>
 
-          <p style="font-size: 13px; color: #7A6E58; margin-bottom: 24px;">Assign points to each team. Leave blank for 0.</p>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <p style="font-size: 13px; color: #7A6E58; margin: 0;">Add winners for this event.</p>
+            <button type="button" id="add-winner-btn" style="background: rgba(201,162,39,0.1); border: 1px solid rgba(201,162,39,0.3); color: #C9A227; font-family: 'Inter', sans-serif; font-size: 11px; text-transform: uppercase; padding: 6px 12px; border-radius: 4px; cursor: pointer;">+ Add Winner</button>
+          </div>
           
           <form id="score-form">
-            <div id="team-inputs" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
-              <!-- Inputs rendered here by JS -->
+            <div id="winners-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; max-height: 300px; overflow-y: auto; padding-right: 8px;">
+              <!-- Dynamic winner rows go here -->
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid rgba(201,162,39,0.2);">
               <button type="button" id="delete-event-btn" class="btn btn-danger">Delete Event</button>
-              <button type="submit" class="btn">Save Scores</button>
+              <button type="submit" class="btn">Save Winners</button>
             </div>
           </form>
         </div>

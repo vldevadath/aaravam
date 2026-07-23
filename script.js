@@ -279,49 +279,34 @@ document.addEventListener("DOMContentLoaded", () => {
                   <p style="font-family: 'Cinzel', serif; font-size: 13px; color: #F5EFE0; margin: 0 0 4px;">${ev.name}</p>
                 </div>
             `;
-            
-            if (!ev.points || Object.keys(ev.points).length === 0) {
+            if (!ev.winners || ev.winners.length === 0) {
               categoryHtml += `<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #7A6E58; font-style: italic;">Winners not announced</span>`;
             } else {
-              // Calculate ranks
-              const teamPoints = Object.keys(ev.points).map(teamId => ({
-                id: teamId,
-                name: window.AaravamData.TEAMS.find(t => t.id === teamId)?.name || teamId,
-                points: ev.points[teamId]
-              })).filter(t => t.points > 0);
+              categoryHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
               
-              teamPoints.sort((a, b) => b.points - a.points);
+              // Sort winners by place
+              const sortedWinners = [...ev.winners].sort((a, b) => parseInt(a.place) - parseInt(b.place));
               
-              if (teamPoints.length === 0) {
-                categoryHtml += `<span style="font-family: 'Inter', sans-serif; font-size: 12px; color: #7A6E58; font-style: italic;">Winners not announced</span>`;
-              } else {
-                categoryHtml += `<div style="display: flex; flex-wrap: wrap; gap: 8px;">`;
+              sortedWinners.forEach(winner => {
+                const teamName = window.AaravamData.TEAMS.find(t => t.id === winner.teamId)?.name || winner.teamId;
+                const rank = parseInt(winner.place);
                 
-                let currentRank = 1;
-                let prevPoints = -1;
+                let styleConfig = { bg: 'rgba(180,83,9,0.1)', border: 'rgba(180,83,9,0.25)', text: '#FDBA74', label: '3rd' };
+                if (rank === 1) styleConfig = { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', text: '#FDE68A', label: '1st' };
+                else if (rank === 2) styleConfig = { bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.25)', text: '#CBD5E1', label: '2nd' };
                 
-                teamPoints.forEach(team => {
-                  if (prevPoints !== -1 && team.points < prevPoints) {
-                    currentRank++;
-                  }
-                  prevPoints = team.points;
-                  
-                  if (currentRank <= 3) {
-                    let styleConfig = { bg: 'rgba(180,83,9,0.1)', border: 'rgba(180,83,9,0.25)', text: '#FDBA74', label: '3rd' };
-                    if (currentRank === 1) styleConfig = { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', text: '#FDE68A', label: '1st' };
-                    if (currentRank === 2) styleConfig = { bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.25)', text: '#CBD5E1', label: '2nd' };
-                    
-                    categoryHtml += `
-                      <div style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 4px; background: ${styleConfig.bg}; border: 1px solid ${styleConfig.border};">
-                        <span style="font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: ${styleConfig.text}; letter-spacing: 0.2em; text-transform: uppercase;">${styleConfig.label}</span>
-                        <span style="font-family: 'Inter', sans-serif; font-size: 13px; color: #B8A98A; text-transform: uppercase;">${team.name}</span>
-                      </div>
-                    `;
-                  }
-                });
-                
-                categoryHtml += `</div>`;
-              }
+                categoryHtml += `
+                  <div style="display: flex; flex-direction: column; padding: 8px 14px; border-radius: 4px; background: ${styleConfig.bg}; border: 1px solid ${styleConfig.border};">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                      <span style="font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: ${styleConfig.text}; letter-spacing: 0.2em; text-transform: uppercase;">${styleConfig.label} Place</span>
+                    </div>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #F5EFE0; text-transform: capitalize; margin-bottom: 2px;">${winner.name}</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 11px; color: #B8A98A; text-transform: uppercase;">${teamName}</span>
+                  </div>
+                `;
+              });
+              
+              categoryHtml += `</div>`;
             }
             
             categoryHtml += `</div>`;

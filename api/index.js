@@ -88,10 +88,10 @@ app.put('/api/events/:id/name', requireAuth, async (req, res) => {
   res.json(data.events[eventIndex]);
 });
 
-// Update event points
+// Update event points and winners
 app.put('/api/events/:id/points', requireAuth, async (req, res) => {
   const { id } = req.params;
-  const points = req.body; // should be an object like { "batch_22": 10 }
+  const { points, winners } = req.body; 
   
   const data = await readDB();
   const eventIndex = data.events.findIndex(e => e.id === id);
@@ -100,7 +100,13 @@ app.put('/api/events/:id/points', requireAuth, async (req, res) => {
     return res.status(404).json({ error: 'Event not found' });
   }
   
-  data.events[eventIndex].points = points;
+  if (points) {
+    data.events[eventIndex].points = points;
+  }
+  
+  // Update winners array (could be empty if admin clears it)
+  data.events[eventIndex].winners = winners || [];
+  
   await writeDB(data);
   
   res.json(data.events[eventIndex]);
