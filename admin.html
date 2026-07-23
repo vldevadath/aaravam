@@ -11,6 +11,20 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="tailwind-config.js"></script>
+  
+  <script>
+    // Simple client-side protection for the admin panel
+    if (sessionStorage.getItem('adminAuthenticated') !== 'true') {
+      const pass = prompt("Enter Admin Password:");
+      if (pass === "aaravam@admin2526") {
+        sessionStorage.setItem('adminAuthenticated', 'true');
+      } else {
+        alert("Incorrect password.");
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+
   <link rel="stylesheet" href="style.css">
   <style>
     .admin-card {
