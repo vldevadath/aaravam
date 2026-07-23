@@ -1,0 +1,16 @@
+{
+  "events": [
+    {
+      "id": "evt_1784791532070show5",
+      "name": "test",
+      "category": "on_stage",
+      "points": {
+        "pg_phd": 10,
+        "batch_22": 10,
+        "batch_23": 5,
+        "batch_24": 5,
+        "batch_25": 2
+      }
+    }
+  ]
+}
