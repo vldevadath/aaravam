@@ -10,8 +10,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve the static HTML/CSS/JS files
-app.use(express.static(__dirname));
+// Serve static files only in local dev (Vercel Edge Network handles it in prod)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.use(express.static(__dirname));
+}
 
 // Helper to read DB
 const readDB = async () => {
