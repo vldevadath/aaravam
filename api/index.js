@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const { kv } = require('@vercel/kv');
 
 const app = express();
@@ -9,9 +8,6 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
-// Serve the static HTML/CSS/JS files
-app.use(express.static(__dirname));
 
 // Helper to read DB
 const readDB = async () => {
